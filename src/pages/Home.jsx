@@ -16,7 +16,6 @@ import MainFeature from '../components/MainFeature'
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [showAddModal, setShowAddModal] = useState(false)
   
   const categories = [
     { id: 'all', name: 'All Items' },
@@ -64,18 +63,6 @@ const Home = () => {
       color: 'rose-500'
     }
   ]
-
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value)
-  }
-
-  const handleCategoryChange = (e) => {
-    setSelectedCategory(e.target.value)
-  }
-
-  const openAddItemModal = () => {
-    setShowAddModal(true)
-  }
   
   return (
     <div className="container mx-auto px-4 py-6">
@@ -131,7 +118,7 @@ const Home = () => {
             className="input-field pl-10"
             placeholder="Search inventory items..."
             value={searchQuery}
-            onChange={handleSearch}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         
@@ -140,7 +127,7 @@ const Home = () => {
             <select 
               className="input-field appearance-none pr-10"
               value={selectedCategory}
-              onChange={handleCategoryChange}
+              onChange={(e) => setSelectedCategory(e.target.value)}
             >
               {categories.map(category => (
                 <option key={category.id} value={category.id}>
@@ -156,7 +143,6 @@ const Home = () => {
           <motion.button 
             className="btn btn-primary flex items-center gap-2"
             whileTap={{ scale: 0.95 }}
-            onClick={openAddItemModal}
           >
             <Plus size={18} />
             <span>Add Item</span>
@@ -165,12 +151,7 @@ const Home = () => {
       </div>
       
       {/* Main Feature */}
-      <MainFeature 
-        searchQuery={searchQuery}
-        selectedCategory={selectedCategory}
-        showAddModal={showAddModal}
-        setShowAddModal={setShowAddModal}
-      />
+      <MainFeature />
     </div>
   )
 }
