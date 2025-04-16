@@ -15,9 +15,8 @@ import {
   Clock
 } from 'lucide-react'
 import { format } from 'date-fns'
-import AddItemModal from './AddItemModal'
 
-const MainFeature = ({ searchQuery, selectedCategory, showAddModal, setShowAddModal }) => {
+const MainFeature = () => {
   // State for inventory items
   const [inventoryItems, setInventoryItems] = useState([
     { 
@@ -72,9 +71,6 @@ const MainFeature = ({ searchQuery, selectedCategory, showAddModal, setShowAddMo
     }
   ])
   
-  // Filtered items based on search and category
-  const [filteredItems, setFilteredItems] = useState(inventoryItems)
-  
   // State for transaction modal
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null)
@@ -88,31 +84,6 @@ const MainFeature = ({ searchQuery, selectedCategory, showAddModal, setShowAddMo
   
   // Locations list
   const locations = ['Warehouse A', 'Warehouse B', 'Warehouse C', 'Store Front']
-  
-  // Filter items when search query or category changes
-  useEffect(() => {
-    let results = inventoryItems;
-    
-    // Apply search filter
-    if (searchQuery) {
-      const lowercaseQuery = searchQuery.toLowerCase();
-      results = results.filter(item => 
-        item.name.toLowerCase().includes(lowercaseQuery) || 
-        item.sku.toLowerCase().includes(lowercaseQuery) ||
-        item.category.toLowerCase().includes(lowercaseQuery) ||
-        item.location.toLowerCase().includes(lowercaseQuery)
-      );
-    }
-    
-    // Apply category filter
-    if (selectedCategory !== 'all') {
-      results = results.filter(item => 
-        item.category.toLowerCase() === selectedCategory.toLowerCase()
-      );
-    }
-    
-    setFilteredItems(results);
-  }, [searchQuery, selectedCategory, inventoryItems]);
   
   // Open transaction modal
   const openTransactionModal = (item, type) => {
@@ -194,23 +165,6 @@ const MainFeature = ({ searchQuery, selectedCategory, showAddModal, setShowAddMo
     }, 1000)
   }
   
-  // Handle adding new item
-  const handleAddItem = (newItem) => {
-    // Generate a unique ID (in a real app, this would come from the server)
-    const newId = Math.max(...inventoryItems.map(item => item.id)) + 1
-    
-    // Create the complete item with status based on quantity
-    const itemToAdd = {
-      ...newItem,
-      id: newId,
-      status: newItem.quantity <= 10 ? 'Low Stock' : 'In Stock',
-      lastUpdated: new Date()
-    }
-    
-    // Add the new item to the inventory
-    setInventoryItems(prevItems => [...prevItems, itemToAdd])
-  }
-  
   // Get status badge class
   const getStatusBadge = (status) => {
     switch(status) {
@@ -251,70 +205,59 @@ const MainFeature = ({ searchQuery, selectedCategory, showAddModal, setShowAddMo
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-surface-800 divide-y divide-surface-200 dark:divide-surface-700">
-            {filteredItems.length > 0 ? (
-              filteredItems.map((item) => (
-                <motion.tr 
-                  key={item.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="hover:bg-surface-50 dark:hover:bg-surface-700/50"
-                >
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 flex-shrink-0 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-                        <Package size={18} className="text-primary" />
-                      </div>
-                      <div className="ml-3">
-                        <div className="text-sm font-medium">{item.name}</div>
-                      </div>
+            {inventoryItems.map((item) => (
+              <motion.tr 
+                key={item.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="hover:bg-surface-50 dark:hover:bg-surface-700/50"
+              >
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="h-10 w-10 flex-shrink-0 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                      <Package size={18} className="text-primary" />
                     </div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">{item.sku}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">{item.category}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{item.quantity}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">{item.location}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className={`badge ${getStatusBadge(item.status)}`}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-surface-500 dark:text-surface-400">
-                    {format(item.lastUpdated, 'MMM d, yyyy')}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end gap-2">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="p-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
-                        onClick={() => openTransactionModal(item, 'add')}
-                      >
-                        <Plus size={16} />
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
-                        onClick={() => openTransactionModal(item, 'remove')}
-                        disabled={item.quantity <= 0}
-                      >
-                        <Minus size={16} />
-                      </motion.button>
+                    <div className="ml-3">
+                      <div className="text-sm font-medium">{item.name}</div>
                     </div>
-                  </td>
-                </motion.tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="8" className="px-4 py-8 text-center text-surface-500 dark:text-surface-400">
-                  <div className="flex flex-col items-center">
-                    <Package size={24} className="mb-2 text-surface-400" />
-                    <p>No items found matching your search criteria</p>
                   </div>
                 </td>
-              </tr>
-            )}
+                <td className="px-4 py-3 whitespace-nowrap text-sm">{item.sku}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm">{item.category}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{item.quantity}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm">{item.location}</td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <span className={`badge ${getStatusBadge(item.status)}`}>
+                    {item.status}
+                  </span>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-surface-500 dark:text-surface-400">
+                  {format(item.lastUpdated, 'MMM d, yyyy')}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                  <div className="flex justify-end gap-2">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="p-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                      onClick={() => openTransactionModal(item, 'add')}
+                    >
+                      <Plus size={16} />
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
+                      onClick={() => openTransactionModal(item, 'remove')}
+                      disabled={item.quantity <= 0}
+                    >
+                      <Minus size={16} />
+                    </motion.button>
+                  </div>
+                </td>
+              </motion.tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -482,15 +425,6 @@ const MainFeature = ({ searchQuery, selectedCategory, showAddModal, setShowAddMo
         )}
       </AnimatePresence>
       
-      {/* Add Item Modal */}
-      <AddItemModal 
-        isOpen={showAddModal} 
-        onClose={() => setShowAddModal(false)} 
-        onAddItem={handleAddItem}
-        categories={['Electronics', 'Furniture', 'Office Supplies', 'Clothing']}
-        locations={locations}
-      />
-      
       {/* Empty State (shown when no inventory items) */}
       {inventoryItems.length === 0 && (
         <div className="text-center py-12 border-2 border-dashed border-surface-200 dark:border-surface-700 rounded-xl">
@@ -501,10 +435,7 @@ const MainFeature = ({ searchQuery, selectedCategory, showAddModal, setShowAddMo
           <p className="text-surface-500 dark:text-surface-400 max-w-md mx-auto mb-6">
             You haven't added any inventory items yet. Start by adding your first item to track.
           </p>
-          <button 
-            className="btn btn-primary"
-            onClick={() => setShowAddModal(true)}
-          >
+          <button className="btn btn-primary">
             <Plus size={18} className="mr-2" />
             Add First Item
           </button>
